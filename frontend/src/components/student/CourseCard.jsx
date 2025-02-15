@@ -32,7 +32,7 @@ const CourseCard = ({ course }) => {
           <h3 className="text-xs font-bold text-gray-900 line-clamp-2 sm:text-sm lg:text-base">
             {course.courseTitle}
           </h3>
-          <p className='text-gray-500 mt-1 mb-1 text-xs sm:text-sm'>Shubh Jain</p>
+          <p className='text-gray-500 mt-1 mb-1 text-xs sm:text-sm'>{course.educator.name}</p>
         </div>
         
         {/* Rating Container */}

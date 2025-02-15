@@ -1,25 +1,43 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../context/AppContext'
 import Loading from '../../components/student/Loading'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+
+
 
 // Component to display list of courses created by the educator
 const MyCourses = () => {
 
-  // Context to access currency and all courses data
-  const {currency, allCourses} = useContext(AppContext)
+  const {currency, backendUrl, getToken, isEducator} = useContext(AppContext)
+
 
   // State to store courses data
   const [courses, setCourses] = useState(null)
 
   // Function to fetch courses created by the educator
   const fetchEducatorCourses = async () => {
-    setCourses(allCourses)
+    try {
+      const token = await getToken()
+      const {data} = await axios.get(backendUrl + '/api/educator/courses', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      data.success && setCourses(data.courses)
+
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   // Effect hook to fetch courses when component mounts
   useEffect(() => {
-    fetchEducatorCourses()
-  }, [])
+    if(isEducator){
+      fetchEducatorCourses()
+    }
+  }, [isEducator])
 
 
   // Render component with courses data

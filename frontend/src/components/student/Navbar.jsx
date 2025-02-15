@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom'
 import { useClerk, UserButton, useUser } from '@clerk/clerk-react'
 import { useContext } from 'react'
 import { AppContext } from '../../context/AppContext'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 const Navbar = () => {
   // Get navigation and educator status from context
-  const { navigate, isEducator } = useContext(AppContext)
+  const { navigate, isEducator, backendUrl, setIsEducator, getToken } = useContext(AppContext)
 
   // Check if current page is the course list page
   const isCourseListPage = location.pathname.includes('/course-list');
@@ -15,6 +17,34 @@ const Navbar = () => {
   // Clerk authentication hooks
   const { openSignIn } = useClerk()
   const { user } = useUser()
+
+  const becomeEducator = async () => {
+    try {
+      if(isEducator){
+        navigate('/educator')
+        return
+      }
+
+      const token = await getToken()
+      const {data} = await axios.get(backendUrl + '/api/educator/update-role', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if(data.success){
+        setIsEducator(true)
+        toast.success(data.message)
+
+      } else {
+        toast.error(data.message)
+      }
+      
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
 
   return (
     // Main navbar container - background color changes based on course list page
@@ -27,7 +57,7 @@ const Navbar = () => {
         <div className='flex items-center gap-5'>
           { user && 
           <> 
-            <button onClick={() => {navigate('/educator')}}>{isEducator ? 'Educator Dashboard' : 'Become Educator'}</button> |
+            <button onClick={becomeEducator}>{isEducator ? 'Educator Dashboard' : 'Become Educator'}</button> |
             <Link to='/my-enrollments'>My Enrollments</Link>
           </>
           }
@@ -41,7 +71,7 @@ const Navbar = () => {
         <div className='flex items-center gap-1 sm:gap-2 max-sm:text-xs'>
           { user && 
             <> 
-              <button onClick={() => {navigate('/educator')}}>{isEducator ? 'Educator Dashboard' : 'Become Educator'}</button> |
+              <button onClick={becomeEducator}>{isEducator ? 'Educator Dashboard' : 'Become Educator'}</button> |
               <Link to='/my-enrollments'>My Enrollments</Link>
             </>
           }

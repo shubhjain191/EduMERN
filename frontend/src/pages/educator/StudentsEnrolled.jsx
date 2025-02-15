@@ -1,22 +1,44 @@
 import React, { useEffect, useState } from 'react'
 import { dummyStudentEnrolled } from '../../assets/assets'
 import Loading from '../../components/student/Loading'
+import { AppContext } from '../../context/AppContext.jsx'
+import { useContext } from 'react'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 // Component to display list of enrolled students in a tabular format
 const StudentsEnrolled = () => {
+
+  const {backendUrl, getToken, isEducator} = useContext(AppContext)
+
   // State to store enrolled students data
   const [enrollledStudents, setEnrolledStudents] = useState(null)
 
   // Function to fetch enrolled students data
   const fetchEnrolledStudents = async () => {
-    // Currently using dummy data, should be replaced with actual API call
-    setEnrolledStudents(dummyStudentEnrolled)
+    try {
+      const token = await getToken()
+      const {data} = await axios.get(backendUrl + '/api/educator/enrolled-students', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      if(data.success){
+        setEnrolledStudents(data.enrolledStudents.reverse())
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   // Fetch enrolled students data on component mount
   useEffect(() => {
-    fetchEnrolledStudents()
-  }, [])
+    if(isEducator){
+      fetchEnrolledStudents()
+    }
+  }, [isEducator])
   
   return enrollledStudents ? (
     <div className="container mx-auto px-4 py-8">

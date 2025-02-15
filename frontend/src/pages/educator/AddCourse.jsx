@@ -3,9 +3,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import uniqid from 'uniqid' // For generating unique IDs
 import Quill from 'quill'    // Rich text editor
 import { assets } from '../../assets/assets'
+import { AppContext } from '../../context/AppContext.jsx'
+import { useContext } from 'react'
+import { toast } from 'react-toastify'
 
 // Main component for adding a new course
 const AddCourse = () => {
+
+  const {backendUrl, getToken} = useContext(AppContext)
+
+
   // Refs for Quill editor initialization
   const quillRef = useRef(null)
   const editorRef = useRef(null)
@@ -98,7 +105,42 @@ const AddCourse = () => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    try {
+      e.preventDefault()
+      if(!image){
+        toast.error('Please upload a thumbnail image')
+      }
+      const courseData = {
+        courseTitle,
+        courseDescription: quillRef.current.root.innerHTML(),
+        coursePrice: Number(coursePrice),
+        discount: Number(discount),
+        courseContent: chapters,
+        
+      }
+      const formData = new FormData()
+      formData.append('courseData', JSON.stringify(courseData))
+      formData.append('thumbnail', image)
+      const token = await getToken()
+      const {data} = await axios.post(backendUrl + '/api/educator/add-course', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      if(data.success){
+        toast.success(data.message)
+        setCourseTitle('')
+        setCoursePrice(0)
+        setDiscount(0)
+        setImage(null)
+        setChapters([])
+        quillRef.current.root.innerHTML('')
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   // Initialize Quill editor when component mounts

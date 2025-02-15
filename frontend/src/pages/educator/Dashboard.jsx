@@ -2,9 +2,13 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../context/AppContext'
 import { assets, dummyDashboardData } from '../../assets/assets'
 import Loading from '../../components/student/Loading'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 // Component to display educator's dashboard with various metrics and latest enrollments
 const Dashboard = () => {
+
+  const {backendUrl, getToken, isEducator} = useContext(AppContext)
 
   // Context to access currency
   const { currency } = useContext(AppContext)
@@ -14,13 +18,30 @@ const Dashboard = () => {
 
   // Function to fetch dashboard data
   const fetchDashboardData = async () => {
-    setDashboardData(dummyDashboardData)
+    try {
+      const token = await getToken()
+      const {data} = await axios.get(backendUrl + '/api/educator/dashboard', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      if(data.success){
+        setDashboardData(data.dashboardData)
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
+
   // Effect hook to fetch dashboard data when component mounts
-    useEffect(() => {
+  useEffect(() => {
+    if(isEducator){
       fetchDashboardData()
-    }, [])
+    }
+  }, [isEducator])
   
   // Render component with dashboard data
   return dashboardData ? (
