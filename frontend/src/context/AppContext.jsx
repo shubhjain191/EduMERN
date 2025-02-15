@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { dummyCourses } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import humanizeDuration from 'humanize-duration'
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 // Create the AppContext
 export const AppContext = createContext()
@@ -14,6 +15,12 @@ export const AppContextProvider = (props) => {
 
     // Navigation hook
     const navigate = useNavigate()
+
+    // Auth hook
+    const {getToken} = useAuth()
+
+    // User hook
+    const {user} = useUser()
 
     // State for all courses
     const [allCourses, setAllCourses] = useState([])
@@ -79,6 +86,17 @@ const calculateChapterTime = (chapter) => {
         fetchAllCourses()
         fetchUserEnrolledCourses()
     }, [])
+
+    const logToken = async () => {
+        console.log(await getToken());
+    }
+
+    // Effect to check if user is educator
+    useEffect(() => {
+        if(user){
+            logToken()
+        }
+    }, [user])
 
     // Value to provide to the AppContext
     const value = {
