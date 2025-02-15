@@ -29,7 +29,7 @@ export const clerkWebhook = async (req, res) => {
                 }
 
                 await User.create(userData)
-                res.JSON({})
+                res.json({})
                 break;
             }
 
@@ -42,14 +42,14 @@ export const clerkWebhook = async (req, res) => {
                 }
 
                 await User.findByIdAndUpdate(data.id, userData)
-                res.JSON({})
+                res.json({})
                 break;
             }
 
             //Delete user data
             case 'user.deleted': {
                 await User.findByIdAndDelete(data.id)
-                res.JSON({})
+                res.json({})
                 break;
             }
 
@@ -63,19 +63,21 @@ export const clerkWebhook = async (req, res) => {
 }
 
 //Stripe Webhook Controller function
-const stripeInstance = new Stripe(process.env.STRIPE_WEBHOOK_SECRET)
+const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 export const stripeWebHooks = async (req, res) => {
-
     const sig = req.headers['stripe-signature']
 
     let event
 
-    //Verify the webhook request
     try {
-        event = Stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET)
-
+        event = stripeInstance.webhooks.constructEvent(
+            req.body,
+            sig,
+            process.env.STRIPE_WEBHOOK_SECRET
+        )
     } catch (error) {
+        console.error('Webhook Error:', error.message)
         return res.status(400).send(`Webhook Error: ${error.message}`)
     }
 
@@ -121,12 +123,12 @@ export const stripeWebHooks = async (req, res) => {
             break;
         }
         
-        //Handle payment method attached event
+        
         default:
             console.log(`Unhandled event type ${event.type}`);
         }
 
-        response.json({received: true})
+        res.json({received: true})
 }
 
 
