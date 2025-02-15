@@ -5,6 +5,7 @@ import Loading from '../../components/student/Loading'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
+
 // Component to display educator's dashboard with various metrics and latest enrollments
 const Dashboard = () => {
 

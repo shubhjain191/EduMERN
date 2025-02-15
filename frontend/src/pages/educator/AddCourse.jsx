@@ -6,6 +6,7 @@ import { assets } from '../../assets/assets'
 import { AppContext } from '../../context/AppContext.jsx'
 import { useContext } from 'react'
 import { toast } from 'react-toastify'
+import axios from 'axios'
 
 // Main component for adding a new course
 const AddCourse = () => {
@@ -112,11 +113,10 @@ const AddCourse = () => {
       }
       const courseData = {
         courseTitle,
-        courseDescription: quillRef.current.root.innerHTML(),
+        courseDescription: quillRef.current.root.innerHTML,
         coursePrice: Number(coursePrice),
         discount: Number(discount),
         courseContent: chapters,
-        
       }
       const formData = new FormData()
       formData.append('courseData', JSON.stringify(courseData))
